@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
-}
+    "id": "svg-styler",
+    "name": "SVG Style Editor",
+    "version": "1.0.0",
+    "minAppVersion": "0.9.12",
+    "description": "Change the style properies of an embded SVG file",
+    "author": "ARGOSTA",
+    "authorUrl": "https://github.com/arg1998/obsidian-svg-styler",
+    "isDesktopOnly": true
+  }
+  

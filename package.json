@@ -20,5 +20,9 @@
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"css": "^3.0.0",
+		"svgson": "^5.3.1"
 	}
 }
