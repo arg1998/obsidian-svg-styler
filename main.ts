@@ -1,4 +1,4 @@
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 import {
 	App,
@@ -77,7 +77,6 @@ export default class SvgStyleEditor extends Plugin {
 	}
 
 	onunload() {
-		// Nothing to unload
 	}
 }
 
@@ -90,7 +89,6 @@ class SvgStyleEditorModal extends Modal {
 	private file: TFile;
 	private editor: Editor;
 
-	// Modify the constructor to accept the editor:
 	constructor(app: App, file: TFile, editor: Editor) {
 		super(app);
 		this.file = file;

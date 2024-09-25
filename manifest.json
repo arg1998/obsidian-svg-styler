@@ -2,7 +2,7 @@
     "id": "svg-styler",
     "name": "SVG Style Editor",
     "version": "1.0.0",
-    "minAppVersion": "0.9.12",
+    "minAppVersion": "1.1.9",
     "description": "Change the style properies of an embded SVG file",
     "author": "ARGOSTA",
     "authorUrl": "https://github.com/arg1998/obsidian-svg-styler",
