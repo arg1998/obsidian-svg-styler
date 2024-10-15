@@ -9,7 +9,12 @@ import {
 	MarkdownView,
 	TFile,
 	Editor,
+	PluginSettingTab,
+	normalizePath,
 } from "obsidian";
+
+import { writeFile, readFile } from "fs/promises";
+import { join } from "path";
 
 const svgson = require("svgson");
 const css = require("css");
@@ -28,10 +33,26 @@ if (DEBUG_MODE) {
 	print = (_: any) => {}; // empty function if not debugging
 }
 
+interface SvgStylerSettings {
+	duplicateSvgDirectory: "default" | "custom";
+	customDirectoryPath: string;
+}
+
+const DEFAULT_SETTINGS: SvgStylerSettings = {
+	duplicateSvgDirectory: "default",
+	customDirectoryPath: "",
+};
+
 export default class SvgStyleEditor extends Plugin {
+	settings: SvgStylerSettings;
+
 	async onload() {
+		print(this.app);
+		this.loadSettings();
+		this.addSettingTab(new SvgStylerSettingPage(this.app, this));
+
 		this.addCommand({
-			id: "svg-styler",
+			id: "obsidian-svg-styler",
 			name: "Change SVG Style | Color | Properties",
 			callback: () => {
 				const view =
@@ -46,18 +67,20 @@ export default class SvgStyleEditor extends Plugin {
 					);
 					if (fileNameMatch && fileNameMatch[1]) {
 						const filePath = fileNameMatch[1];
+						
 
 						// Resolve the file path
 						const activeFile = this.app.workspace.getActiveFile();
-						const linkedFile =
-							this.app.metadataCache.getFirstLinkpathDest(
-								filePath,
-								activeFile?.path || ""
-							);
+						const linkedFile = this.app.metadataCache.getFirstLinkpathDest(
+							filePath,
+							activeFile?.path || ""
+						);
+						print(linkedFile)
 
 						if (linkedFile && linkedFile.extension === "svg") {
 							new SvgStyleEditorModal(
 								this.app,
+								this.settings,
 								linkedFile,
 								editor
 							).open();
@@ -76,7 +99,134 @@ export default class SvgStyleEditor extends Plugin {
 		});
 	}
 
-	onunload() {
+	onunload() {}
+
+	async loadSettings() {
+		try {
+			const data = await readFile(this.getDataFilePath(), "utf8");
+			this.settings = Object.assign(
+				{},
+				DEFAULT_SETTINGS,
+				JSON.parse(data)
+			);
+			print("loaded settigns: ", this.settings);
+		} catch (error) {
+			this.settings = DEFAULT_SETTINGS;
+			this.saveSettings();
+			print("could not find the data.json. making one! ");
+		}
+	}
+
+	async saveSettings() {
+		const data = JSON.stringify(this.settings, null, 2);
+		await writeFile(this.getDataFilePath(), data, "utf8");
+		print("saved setting in data.json");
+	}
+
+	// Helper function to get the full path of the data.json file in the plugin folder
+	getDataFilePath(): string {
+		return join(
+			this.app.vault.adapter.basePath,
+			".obsidian",
+			"plugins",
+			this.manifest.id,
+			"data.json"
+		);
+	}
+}
+
+class SvgStylerSettingPage extends PluginSettingTab {
+	plugin: SvgStyleEditor;
+
+	constructor(app: App, plugin: SvgStyleEditor) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		const drop_down_desc =
+			this.plugin.settings.duplicateSvgDirectory == "default"
+				? "You can Change the default resource path in Obsidian Settings > Files and Links > Attachment folder path"
+				: "Please provide a valid directory path bellow";
+
+		containerEl.createEl("h1", { text: "SVG Styler Settings" });
+
+		// Subheading / Subtitle for the dropdown
+		containerEl.createEl("h3", { text: "Duplicate SVG Directory" });
+		containerEl.createEl("p", {
+			text:
+				"Choose where duplicate SVG files should be saved. " +
+				"You can select the default Obsidian resource directory or specify a custom directory.",
+		});
+
+		// Dropdown for Duplicate SVG Directory
+		new Setting(containerEl)
+			.setName("Duplicate SVG Location")
+			.setDesc(drop_down_desc)
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption("default", "Default Resource/Attachment Directory")
+					.addOption("custom", "Custom Directory")
+					.setValue(this.plugin.settings.duplicateSvgDirectory)
+					.onChange(async (value: "default" | "custom") => {
+						this.plugin.settings.duplicateSvgDirectory = value;
+						this.display();
+					});
+			});
+
+		// Textbox for custom directory path, only if 'Custom Directory' is selected
+		if (this.plugin.settings.duplicateSvgDirectory === "custom") {
+			new Setting(containerEl)
+				.setName("Custom Directory Path")
+				.setDesc(
+					"Enter the full path for the custom directory. A direcoty will be created if the path does not exits"
+				)
+				.addText((text) => {
+					text.setPlaceholder("/path/to/directory")
+						.setValue(this.plugin.settings.customDirectoryPath)
+						.onChange(async (value) => {
+							this.plugin.settings.customDirectoryPath = value;
+						});
+				});
+		}
+
+		// Add a "Save" button
+		new Setting(containerEl).addButton((btn) => {
+			btn.setButtonText("Save")
+				.setCta()
+				.onClick(async () => {
+					// Check if "Custom Directory" is selected
+					if (this.plugin.settings.duplicateSvgDirectory === "custom") {
+						const customPath = normalizePath(this.plugin.settings.customDirectoryPath);
+						const vaultBasePath = this.app.vault.adapter.basePath;
+						const fullCustomPath = normalizePath(
+							vaultBasePath + "/" + customPath
+						);
+
+						// Check if the directory exists
+						const directoryExists = await this.app.vault.adapter.exists(fullCustomPath);
+
+						if (!directoryExists) {
+							try {
+								// Create the directory if it does not exist
+								await this.app.vault.adapter.mkdir(customPath);
+								new Notice("Custom directory created successfully at: " + customPath);
+							} catch (error) {
+								new Notice("Failed to create custom directory. Please check the path.");
+								print("Failed to create directory:", error);
+								return;
+							}
+						}
+					}
+
+					// Save the settings
+					await this.plugin.saveSettings();
+					new Notice("Settings Saved Successfully");
+				});
+		});
 	}
 }
 
@@ -85,18 +235,52 @@ class SvgStyleEditorModal extends Modal {
 	private global_preset: any;
 	private input_svg: any;
 	private has_valid_style_tag: any;
+	private available_drawing_tags: any;
+	private plugin_setting: SvgStylerSettings;
 
 	private file: TFile;
 	private editor: Editor;
 
-	constructor(app: App, file: TFile, editor: Editor) {
+	constructor(app: App, setting: SvgStylerSettings, file: TFile, editor: Editor) {
 		super(app);
+		this.plugin_setting = setting;
 		this.file = file;
 		this.editor = editor;
 
 		this.style_prest = generate_default_preset();
 		this.global_preset = generate_global_svg_preset();
 		this.has_valid_style_tag = false;
+	}
+
+	findDrawingTags(svgsonObj: any, allowed_elements: any) {
+		let foundTags = new Set();
+
+		function searchElement(element: any) {
+			const el_name = `${element.name}`.toLowerCase().trim();
+			if (allowed_elements.includes(el_name)) {
+				foundTags.add(el_name);
+			}
+
+			if (element.children && element.children.length > 0) {
+				element.children.forEach((child: any) => searchElement(child));
+			}
+		}
+
+		searchElement(svgsonObj);
+
+		return Array.from(foundTags);
+	}
+
+	getDefaultAttachmentFolder(): string {
+		const attachmentFolder = this.app.vault.config.attachmentFolderPath;
+
+		if (attachmentFolder) {
+			return normalizePath(
+				this.app.vault.adapter.basePath + "/" + attachmentFolder
+			);
+		} else {
+			return this.app.vault.adapter.basepath;
+		}
 	}
 
 	async processSvg() {
@@ -121,6 +305,11 @@ class SvgStyleEditorModal extends Modal {
 			"ellipse",
 			"polygon",
 		];
+
+		this.available_drawing_tags = this.findDrawingTags(
+			input_svg,
+			allowed_elements
+		);
 
 		// =============================================================
 		//                     process global SVG attributes
@@ -289,7 +478,7 @@ class SvgStyleEditorModal extends Modal {
 		//                    Style Editing Fields
 		// =============================================================
 
-		for (const tag_name of Object.keys(this.style_prest)) {
+		for (const tag_name of this.available_drawing_tags) {
 			const tag_obj = this.style_prest[tag_name];
 			const elem_detail_style = contentEl.createEl("details");
 			elem_detail_style.createEl("summary", {
@@ -390,12 +579,19 @@ class SvgStyleEditorModal extends Modal {
 				btn.setButtonText("Cancel").onClick(async () => {
 					this.close();
 				});
-			})
-			.addButton((btn) => {
-				btn.setButtonText("Save")
+			}).addButton((btn) => {
+				btn.setButtonText("Save as Duplicate")
 					.setCta()
 					.onClick(async () => {
-						await this.modifySvg();
+						await this.modifySvg(true);
+						this.close();
+					});
+			})
+			.addButton((btn) => {
+				btn.setButtonText("Save In-place")
+					.setCta()
+					.onClick(async () => {
+						await this.modifySvg(false);
 						this.close();
 					});
 			});
@@ -423,7 +619,7 @@ class SvgStyleEditorModal extends Modal {
 		}
 	}
 
-	async modifySvg() {
+	async modifySvg(duplicate: boolean) {
 		try {
 			// =============================================================
 			//                  Shrink global preset
@@ -507,8 +703,7 @@ class SvgStyleEditorModal extends Modal {
 
 			const output_svg_str = svgson.stringify(this.input_svg);
 
-			await this.app.vault.modify(this.file, output_svg_str);
-			new Notice("SVG styles updated successfully.");
+			await this.saveSvgToFile(duplicate, output_svg_str);
 
 			// Refresh the editor to reflect changes
 			this.refreshEditor();
@@ -519,6 +714,37 @@ class SvgStyleEditorModal extends Modal {
 			} else {
 				new Notice("Error modifying SVG file.");
 			}
+		}
+	}
+
+	async saveSvgToFile(duplicate: Boolean, svg_str_content: string){
+
+		function getRandomInt(max: number) {
+			return Math.floor(Math.random() * max);
+		}
+
+		if(!duplicate){
+			// we save in-place
+			this.app.vault.modify(this.file, svg_str_content);
+			new Notice("SVG styles updated successfully.");
+		}else{
+			// create a duplicate and then save it in the duplicates directory
+			const newfileName = `${this.file.basename}${getRandomInt(10)}.${this.file.extension}`
+
+			let duplicate_path = ""
+			if(this.plugin_setting.duplicateSvgDirectory == "default"){
+				duplicate_path = this.app.vault.config.attachmentFolderPath + "/" + newfileName;
+				
+			}else {
+				duplicate_path = this.plugin_setting.customDirectoryPath + "/" + newfileName;
+			}
+
+
+			this.app.vault.create(duplicate_path, svg_str_content);
+			new Notice("SVG style duplicated successfully: " + duplicate_path);
+			// chaneg the cursor selection to the new file
+			this.editor.replaceSelection(`![[${newfileName}]]`);
+
 		}
 	}
 
