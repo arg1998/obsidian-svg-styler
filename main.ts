@@ -566,7 +566,7 @@ class SvgStyleEditorModal extends Modal {
 
 		contentEl.createEl("hr").style.margin = "10px 0";
 		contentEl.createEl("p", {
-			text: "Fileds with ✏️ have existing values!",
+			text: "Fields with ✏️ have existing values!",
 		});
 		contentEl.createDiv().style.margin = "10px 0";
 
