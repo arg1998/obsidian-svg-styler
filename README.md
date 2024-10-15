@@ -1,9 +1,9 @@
 # Obsidian SVG Styler
 
-Obsidian SVG Styler is a versatile plugin designed to help you easily modify the style properties of SVG images directly within the editor. With this plugin, you can customize properties like color, border, opacity, and more. Supported drawable tags include: `path`, `line`, `rect`, `circle`, `ellipse`, and `polygon`.
-<center>
+Obsidian SVG Styler is a simple plugin designed to help you easily modify the style properties of SVG images directly within the editor. With this plugin, you can customize properties like color, border, opacity, and more. Supported drawable tags include: `path`, `line`, `rect`, `circle`, `ellipse`, and `polygon`.
+<div align="center">
   <img src="images/banner.png">
-</center>
+</div>
 
 
 ### How to Use
@@ -12,12 +12,12 @@ Obsidian SVG Styler is a versatile plugin designed to help you easily modify the
 2. Press `Ctrl + P` to open the command palette.
 3. Type **SVG Styler** and press `Enter`.
 
-<center>
+<div align="center">
   <p>Command Palette</p>
-  <img src="images/svg_command_pallete.png">
+  <img src="images/svg_command_pallete.png" alt="Command Palette">
   <p>SVG Styler Plugin</p>
-  <img src="images/svg_plugin.png">
-</center>
+  <img src="images/svg_plugin.png" alt="SVG Styler Plugin">
+</div>
 
 ### Available Options
 
