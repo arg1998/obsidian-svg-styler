@@ -8,7 +8,7 @@ Obsidian SVG Styler is a simple plugin designed to help you easily modify the st
 
 ### How to Use
 
-1. Select your embedded SVG file (e.g., `~[[my-icon.svg]]`).
+1. Select your embedded SVG file (e.g., `![[my-icon.svg]]`).
 2. Press `Ctrl + P` to open the command palette.
 3. Type **SVG Styler** and press `Enter`.
 
