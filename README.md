@@ -1,4 +1,4 @@
-# Obsidian SVG Styler
+# Obsidian SVG Style Editor
 
 Obsidian SVG Styler is a simple plugin designed to help you easily modify the style properties of SVG images directly within the editor. With this plugin, you can customize properties like color, border, opacity, and more. Supported drawable tags include: `path`, `line`, `rect`, `circle`, `ellipse`, and `polygon`.
 <div align="center">
