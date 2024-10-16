@@ -127,7 +127,7 @@ export default class SvgStyleEditor extends Plugin {
 	getDataFilePath(): string {
 		return join(
 			this.app.vault.adapter.basePath,
-			".obsidian",
+			this.app.vault.configDir,
 			"plugins",
 			this.manifest.id,
 			"data.json"
@@ -471,8 +471,7 @@ class SvgStyleEditorModal extends Modal {
 		// =============================================================
 		//                    Add a divider
 		// =============================================================
-		let divider = contentEl.createEl("hr");
-		divider.style.margin = "10px 0";
+		contentEl.createEl("hr").addClass("asvgs_hr_divider");
 
 		// =============================================================
 		//                    Style Editing Fields
@@ -481,12 +480,7 @@ class SvgStyleEditorModal extends Modal {
 		for (const tag_name of this.available_drawing_tags) {
 			const tag_obj = this.style_prest[tag_name];
 			const elem_detail_style = contentEl.createEl("details");
-			elem_detail_style.createEl("summary", {
-				text: `<${tag_name}>`,
-				attr: {
-					style: "font-size: calc(var(--font-ui-medium) + 2px) !important;",
-				},
-			});
+			elem_detail_style.createEl("summary", { text: `<${tag_name}>`}).addClass("asvgs_tag_header");
 
 			for (const prop_name of Object.keys(tag_obj)) {
 				const prop_obj = tag_obj[prop_name];
@@ -557,18 +551,18 @@ class SvgStyleEditorModal extends Modal {
 				}
 			}
 
-			contentEl.createDiv().style.margin = "10px 0";
+			contentEl.createDiv().addClass("asvgs_hr_divider");
 		}
 
 		// =============================================================
 		//                    Add Helper text
 		// =============================================================
 
-		contentEl.createEl("hr").style.margin = "10px 0";
+		contentEl.createEl("hr").addClass("asvgs_hr_divider");
 		contentEl.createEl("p", {
 			text: "Fields with ✏️ have existing values!",
 		});
-		contentEl.createDiv().style.margin = "10px 0";
+		contentEl.createDiv().addClass("asvgs_hr_divider");
 
 		// =============================================================
 		//                    Add Action Buttons
