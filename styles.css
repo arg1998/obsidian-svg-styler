@@ -1,8 +1,17 @@
-/*
+/* 
+    Author: ARGOSTA
+    Repo:   https://github.com/arg1998/obsidian-svg-styler/
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
+    Note:
+    >   Every css rule is prefixed by asvgs (Argosta SVG Styler)
+    >   to prevent style conflicts 
 */
+
+
+.asvgs_hr_divider {
+    margin: 10px 0px;
+}
+
+.asvgs_tag_header {
+    font-size: calc(var(--font-ui-medium) + 2px) !important;
+}
