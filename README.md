@@ -39,7 +39,7 @@ Obsidian SVG Styler is a simple plugin designed to help you easily modify the st
   - [x] Option to either modify the SVG in place or work on a duplicate version.
 - [x] Added a feature to display the drawable SVG tags present in the file, allowing users to edit only the existing tags (e.g., `<path>`).
 
-* :wrench: **Patch 1.1.1**: In response to [#4436<sup>:eyes:</sup><sub></sub>](https://github.com/obsidianmd/obsidian-releases/pull/4436#issuecomment-2415669063), this patch will fix the HTML styling inside the JavaScript file and programatically looks for Obsidian's configuration folder instead of hardcoding it.  
+* :wrench::white_check_mark: **Patch 1.1.1**: In response to [#4436<sup>:eyes:</sup><sub></sub>](https://github.com/obsidianmd/obsidian-releases/pull/4436#issuecomment-2415669063), this patch will fix the HTML styling inside the JavaScript file and programatically looks for Obsidian's configuration folder instead of hardcoding it.  
 
 ### :label: Version 1.2
 
