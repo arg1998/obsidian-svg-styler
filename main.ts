@@ -16,8 +16,8 @@ import {
 import { writeFile, readFile } from "fs/promises";
 import { join } from "path";
 
-const svgson = require("svgson");
-const css = require("css");
+import * as svgson from "svgson";
+import * as css from "css";
 
 import {
 	generate_default_preset,
@@ -439,18 +439,6 @@ class SvgStyleEditorModal extends Modal {
 								attr_obj.newValue = `${value}`.trim();
 							});
 					});
-
-				//TODO: need more investigation
-				// if (!_m) {
-				// 	element.addExtraButton((cb) => {
-				// 		cb.setIcon("eraser").onClick(() => {
-				// 			if (!cb.disabled) {
-				// 				print(`Unsetting valueL: `, attr_obj);
-				// 				cb.setDisabled(true);
-				// 			}
-				// 		});
-				// 	});
-				// }
 			} else {
 				new Setting(elem_detail_global)
 					.setName(setting_label)
