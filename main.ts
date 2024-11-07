@@ -52,50 +52,35 @@ export default class SvgStyleEditor extends Plugin {
 		this.addSettingTab(new SvgStylerSettingPage(this.app, this));
 
 		this.addCommand({
-			id: "obsidian-svg-styler",
+			id: "open-svg-styler-editor",
 			name: "Change SVG Style | Color | Properties",
-			callback: () => {
-				const view =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					const editor = view.editor;
-					const selection = editor.getSelection();
 
-					// Regular expression to match ![[filename.svg]]
-					const fileNameMatch = selection.match(
-						/!\[\[([^\]]+\.svg)(\|[^\]]*)?\]\]/
-					);
-					if (fileNameMatch && fileNameMatch[1]) {
-						const filePath = fileNameMatch[1];
-						
+			editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
+				const selection = editor.getSelection();
+				const fileNameMatch = selection.match(/!\[\[([^\]]+\.svg)(\|[^\]]*)?\]\]/);
+				if(checking){
+					if (fileNameMatch && fileNameMatch[1]){
+						// check if user has highlighted an embdded SVG file
+						return true;
+					} 
+					return false;
 
-						// Resolve the file path
-						const activeFile = this.app.workspace.getActiveFile();
-						const linkedFile = this.app.metadataCache.getFirstLinkpathDest(
-							filePath,
-							activeFile?.path || ""
-						);
-						print(linkedFile)
-
-						if (linkedFile && linkedFile.extension === "svg") {
-							new SvgStyleEditorModal(
-								this.app,
-								this.settings,
-								linkedFile,
-								editor
-							).open();
-						} else {
-							new Notice("SVG file not found: " + filePath);
-						}
-					} else {
-						new Notice(
-							"Please select an SVG embed in the format ![[filename.svg]]"
-						);
-					}
 				} else {
-					new Notice("No active markdown editor found.");
+					// checks have passed. now run the command
+					const filePath = fileNameMatch[1];
+
+					// Resolve the file path
+					const activeFile = this.app.workspace.getActiveFile();
+					const linkedFile = this.app.metadataCache.getFirstLinkpathDest( filePath, activeFile?.path || "" );
+					print(linkedFile)
+
+					if (linkedFile && linkedFile.extension === "svg") {
+						new SvgStyleEditorModal(this.app, this.settings, linkedFile, editor).open();
+					} else {
+						new Notice("SVG file not found: " + filePath);
+					}
 				}
-			},
+			}
 		});
 	}
 
@@ -759,14 +744,12 @@ class SvgStyleEditorModal extends Modal {
 
 	refreshEditor() {
 		// 	TODO: investigate why the command bellow doen't refresh/repaint the editor?
-		/*
-			this.editor.refresh();
-		*/
+		// this.editor.refresh(); // this does not work! 
 
 		// This is a hack to work around the Obsidian's obscure API!!
-		this.app.workspace
-			.getActiveViewOfType(MarkdownView)
-			?.leaf.rebuildView();
+		// this.app.workspace
+		// 	.getActiveViewOfType(MarkdownView)
+		// 	?.leaf.rebuildView();
 	}
 
 	onClose() {
