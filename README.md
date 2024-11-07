@@ -1,6 +1,6 @@
-# Obsidian SVG Style Editor
+# SVG Styler Plugin
 
-Obsidian SVG Styler is a simple plugin designed to help you easily modify the style properties of SVG images directly within the editor. With this plugin, you can customize properties like color, border, opacity, and more. Supported drawable tags include: `path`, `line`, `rect`, `circle`, `ellipse`, and `polygon`.
+SVG Styler is a simple [Obsidian](https://obsidian.md) community plugin designed to help you easily modify the style properties of SVG images directly within the editor. With this plugin, you can customize properties like color, border, opacity, and more. Supported drawable tags include: `path`, `line`, `rect`, `circle`, `ellipse`, and `polygon`.
 <div align="center">
   <img src="images/banner.png">
 </div>
@@ -39,7 +39,10 @@ Obsidian SVG Styler is a simple plugin designed to help you easily modify the st
   - [x] Option to either modify the SVG in place or work on a duplicate version.
 - [x] Added a feature to display the drawable SVG tags present in the file, allowing users to edit only the existing tags (e.g., `<path>`).
 
-* :wrench::white_check_mark: **Patch 1.1.1**: In response to [#4436<sup>:eyes:</sup><sub></sub>](https://github.com/obsidianmd/obsidian-releases/pull/4436#issuecomment-2415669063), this patch will fix the HTML styling inside the JavaScript file and programatically looks for Obsidian's configuration folder instead of hardcoding it.  
+* :wrench::white_check_mark: **Patch 1.1.1**: In response to [#4436<sup>:eyes:</sup><sub></sub>](https://github.com/obsidianmd/obsidian-releases/pull/4436#issuecomment-2415669063), this patch fixed HTML inline styling inside the JavaScript file. Additionally this plugin programatically looks for Obsidian's configuration folder instead of hardcoding it. 
+
+* :wrench::white_check_mark: **Patch 1.1.2**: In response to [#4436<sup>:eyes:</sup><sub></sub>](https://github.com/obsidianmd/obsidian-releases/pull/4436#issuecomment-2451720547), this patch fixed UI, naming, code style, and API usage issues. 
+
 
 ### :label: Version 1.2
 
