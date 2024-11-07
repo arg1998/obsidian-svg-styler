@@ -13,9 +13,6 @@ import {
 	normalizePath,
 } from "obsidian";
 
-import { writeFile, readFile } from "fs/promises";
-import { join } from "path";
-
 import * as svgson from "svgson";
 import * as css from "css";
 
