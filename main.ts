@@ -134,13 +134,12 @@ class SvgStylerSettingPage extends PluginSettingTab {
 
 		const drop_down_desc =
 			this.plugin.settings.duplicateSvgDirectory == "default"
-				? "You can Change the default resource path in Obsidian Settings > Files and Links > Attachment folder path"
+				? "You can change the default resource path in Obsidian Settings > Files and Links > Attachment folder path"
 				: "Please provide a valid directory path bellow";
 
-		containerEl.createEl("h1", { text: "SVG Styler Settings" });
 
 		// Subheading / Subtitle for the dropdown
-		containerEl.createEl("h3", { text: "Duplicate SVG Directory" });
+		new Setting(containerEl).setName('Duplicate SVG directory').setHeading();
 		containerEl.createEl("p", {
 			text:
 				"Choose where duplicate SVG files should be saved. " +
@@ -149,12 +148,12 @@ class SvgStylerSettingPage extends PluginSettingTab {
 
 		// Dropdown for Duplicate SVG Directory
 		new Setting(containerEl)
-			.setName("Duplicate SVG Location")
+			.setName("Duplicate SVG location")
 			.setDesc(drop_down_desc)
 			.addDropdown((dropdown) => {
 				dropdown
-					.addOption("default", "Default Resource/Attachment Directory")
-					.addOption("custom", "Custom Directory")
+					.addOption("default", "Default resource/attachment directory")
+					.addOption("custom", "Custom directory")
 					.setValue(this.plugin.settings.duplicateSvgDirectory)
 					.onChange(async (value: "default" | "custom") => {
 						this.plugin.settings.duplicateSvgDirectory = value;
@@ -165,10 +164,8 @@ class SvgStylerSettingPage extends PluginSettingTab {
 		// Textbox for custom directory path, only if 'Custom Directory' is selected
 		if (this.plugin.settings.duplicateSvgDirectory === "custom") {
 			new Setting(containerEl)
-				.setName("Custom Directory Path")
-				.setDesc(
-					"Enter the full path for the custom directory. A direcoty will be created if the path does not exits"
-				)
+				.setName("Custom directory path")
+				.setDesc("Enter the full path for the custom directory. A directory will be created if the path does not exits")
 				.addText((text) => {
 					text.setPlaceholder("/path/to/directory")
 						.setValue(this.plugin.settings.customDirectoryPath)
@@ -200,7 +197,7 @@ class SvgStylerSettingPage extends PluginSettingTab {
 								await this.app.vault.adapter.mkdir(customPath);
 								new Notice("Custom directory created successfully at: " + customPath);
 							} catch (error) {
-								new Notice("Failed to create custom directory. Please check the path.");
+								new Notice("Failed to create custom directory. Please enter a valid path.");
 								print("Failed to create directory:", error);
 								return;
 							}
@@ -209,7 +206,7 @@ class SvgStylerSettingPage extends PluginSettingTab {
 
 					// Save the settings
 					await this.plugin.saveSettings();
-					new Notice("Settings Saved Successfully");
+					new Notice("Settings saved successfully");
 				});
 		});
 	}
@@ -368,9 +365,7 @@ class SvgStyleEditorModal extends Modal {
 						let decl_prop =
 							this.style_prest[selector][decl.property];
 						if (!decl_prop) {
-							print(
-								`>>> Property is not supported: ${decl.property}`
-							);
+							print(`>>> Property is not supported: ${decl.property}`);
 							continue;
 						}
 
@@ -393,7 +388,7 @@ class SvgStyleEditorModal extends Modal {
 		//                 Global SVG Attribute fields
 		// =============================================================
 		const elem_detail_global = contentEl.createEl("details");
-		elem_detail_global.createEl("summary", { text: "Global Attributes" });
+		elem_detail_global.createEl("summary", { text: "Global attributes" });
 		elem_detail_global.createEl("p", {
 			text: "Here you can modify some of the attributes found inside the <svg> tag",
 		});
@@ -547,7 +542,7 @@ class SvgStyleEditorModal extends Modal {
 					this.close();
 				});
 			}).addButton((btn) => {
-				btn.setButtonText("Save as Duplicate")
+				btn.setButtonText("Save as duplicate")
 					.setCta()
 					.onClick(async () => {
 						await this.modifySvg(true);
@@ -555,7 +550,7 @@ class SvgStyleEditorModal extends Modal {
 					});
 			})
 			.addButton((btn) => {
-				btn.setButtonText("Save In-place")
+				btn.setButtonText("Save in-place")
 					.setCta()
 					.onClick(async () => {
 						await this.modifySvg(false);
@@ -565,7 +560,7 @@ class SvgStyleEditorModal extends Modal {
 
 		if (this.has_valid_style_tag) {
 			_setting_buttons.addButton((btn) => {
-				btn.setButtonText("Clear Styles")
+				btn.setButtonText("Clear styles")
 					.setWarning()
 					.onClick(async () => {
 						await this.clearStyles();
