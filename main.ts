@@ -87,36 +87,11 @@ export default class SvgStyleEditor extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		try {
-			const data = await readFile(this.getDataFilePath(), "utf8");
-			this.settings = Object.assign(
-				{},
-				DEFAULT_SETTINGS,
-				JSON.parse(data)
-			);
-			print("loaded settigns: ", this.settings);
-		} catch (error) {
-			this.settings = DEFAULT_SETTINGS;
-			this.saveSettings();
-			print("could not find the data.json. making one! ");
-		}
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
 	}
 
 	async saveSettings() {
-		const data = JSON.stringify(this.settings, null, 2);
-		await writeFile(this.getDataFilePath(), data, "utf8");
-		print("saved setting in data.json");
-	}
-
-	// Helper function to get the full path of the data.json file in the plugin folder
-	getDataFilePath(): string {
-		return join(
-			this.app.vault.adapter.basePath,
-			this.app.vault.configDir,
-			"plugins",
-			this.manifest.id,
-			"data.json"
-		);
+		await this.saveData(this.settings);
 	}
 }
 
@@ -134,7 +109,7 @@ class SvgStylerSettingPage extends PluginSettingTab {
 
 		const drop_down_desc =
 			this.plugin.settings.duplicateSvgDirectory == "default"
-				? "You can change the default resource path in Obsidian Settings > Files and Links > Attachment folder path"
+				? "You can change the default resource path in Obsidian \"Settings > Files and Links > Attachment folder path\""
 				: "Please provide a valid directory path bellow";
 
 
@@ -157,6 +132,7 @@ class SvgStylerSettingPage extends PluginSettingTab {
 					.setValue(this.plugin.settings.duplicateSvgDirectory)
 					.onChange(async (value: "default" | "custom") => {
 						this.plugin.settings.duplicateSvgDirectory = value;
+						this.plugin.saveSettings();
 						this.display();
 					});
 			});
@@ -171,44 +147,10 @@ class SvgStylerSettingPage extends PluginSettingTab {
 						.setValue(this.plugin.settings.customDirectoryPath)
 						.onChange(async (value) => {
 							this.plugin.settings.customDirectoryPath = value;
+							this.plugin.saveSettings();
 						});
 				});
 		}
-
-		// Add a "Save" button
-		new Setting(containerEl).addButton((btn) => {
-			btn.setButtonText("Save")
-				.setCta()
-				.onClick(async () => {
-					// Check if "Custom Directory" is selected
-					if (this.plugin.settings.duplicateSvgDirectory === "custom") {
-						const customPath = normalizePath(this.plugin.settings.customDirectoryPath);
-						const vaultBasePath = this.app.vault.adapter.basePath;
-						const fullCustomPath = normalizePath(
-							vaultBasePath + "/" + customPath
-						);
-
-						// Check if the directory exists
-						const directoryExists = await this.app.vault.adapter.exists(fullCustomPath);
-
-						if (!directoryExists) {
-							try {
-								// Create the directory if it does not exist
-								await this.app.vault.adapter.mkdir(customPath);
-								new Notice("Custom directory created successfully at: " + customPath);
-							} catch (error) {
-								new Notice("Failed to create custom directory. Please enter a valid path.");
-								print("Failed to create directory:", error);
-								return;
-							}
-						}
-					}
-
-					// Save the settings
-					await this.plugin.saveSettings();
-					new Notice("Settings saved successfully");
-				});
-		});
 	}
 }
 
@@ -251,18 +193,6 @@ class SvgStyleEditorModal extends Modal {
 		searchElement(svgsonObj);
 
 		return Array.from(foundTags);
-	}
-
-	getDefaultAttachmentFolder(): string {
-		const attachmentFolder = this.app.vault.config.attachmentFolderPath;
-
-		if (attachmentFolder) {
-			return normalizePath(
-				this.app.vault.adapter.basePath + "/" + attachmentFolder
-			);
-		} else {
-			return this.app.vault.adapter.basepath;
-		}
 	}
 
 	async processSvg() {
@@ -574,8 +504,10 @@ class SvgStyleEditorModal extends Modal {
 				btn.setButtonText("DEBUG")
 					.setWarning()
 					.onClick(() => {
+						print("1. Global Preset\n2. Style Preset\n3. Plugin Settings\n");
 						print(this.global_preset);
 						print(this.style_prest);
+						print(this.plugin_setting);
 					});
 			});
 		}
@@ -697,16 +629,35 @@ class SvgStyleEditorModal extends Modal {
 			if(this.plugin_setting.duplicateSvgDirectory == "default"){
 				duplicate_path = this.app.vault.config.attachmentFolderPath + "/" + newfileName;
 				
-			}else {
+			} else {
+				const customPath = normalizePath(this.plugin_setting.customDirectoryPath);
+				const vaultBasePath = this.app.vault.adapter.basePath;
+				const fullCustomPath = normalizePath(vaultBasePath + "/" + customPath);
+
+				// Check if the directory exists
+				const directoryExists = await this.app.vault.adapter.exists(fullCustomPath);
+
+				if (!directoryExists) {
+					try {
+						// Create the directory if it does not exist
+						await this.app.vault.adapter.mkdir(customPath);
+					} catch (error) {
+						new Notice("Failed to find or create custom directory. Please enter a valid path.");
+						print("Failed to find or create directory:", error);
+						return;
+					}
+
+				}
+				
 				duplicate_path = this.plugin_setting.customDirectoryPath + "/" + newfileName;
 			}
 
-
+			print("duplicate file path: ", duplicate_path);
+			// create a new duplicate file 
 			this.app.vault.create(duplicate_path, svg_str_content);
 			new Notice("SVG style duplicated successfully: " + duplicate_path);
 			// chaneg the cursor selection to the new file
 			this.editor.replaceSelection(`![[${newfileName}]]`);
-
 		}
 	}
 
@@ -739,12 +690,10 @@ class SvgStyleEditorModal extends Modal {
 
 	refreshEditor() {
 		// 	TODO: investigate why the command bellow doen't refresh/repaint the editor?
-		// this.editor.refresh(); // this does not work! 
+		// this.editor.refresh(); // this does not update the editor to reflect new changes
 
-		// This is a hack to work around the Obsidian's obscure API!!
-		// this.app.workspace
-		// 	.getActiveViewOfType(MarkdownView)
-		// 	?.leaf.rebuildView();
+		// This is a hack to work around the Obsidian's API!!
+		this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf.rebuildView();
 	}
 
 	onClose() {
