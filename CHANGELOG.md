@@ -20,6 +20,7 @@
 
 ### :label: Version 1.2 (upcomming)
 
+- [ ] Ability to edit SVGs directly on Canvas or Viewport ([#2](https://github.com/arg1998/obsidian-svg-styler/issues/2)).
 - [ ] Implement a Preset Manager within the settings page.
 - [ ] Enable users to load, save, and remove style presets from both the settings and plugin interface.
 - [ ] Improve the UI/UX of the tag style editor for a more streamlined experience.
